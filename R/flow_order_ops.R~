@@ -1,0 +1,13 @@
+updown2idup <- function(df)
+    {
+        rout <- as_data_frame(df)
+        ids <- data_frame(id=sort(unique(rout$upstream)))
+        routm <- data_frame(id=integer(),upstream=integer())
+        for(i in ids$id)
+        {
+            tmp <- select(rout,downstream,upstream) %>% filter(downstream==i) %>% rename(id=downstream,upstream=upstream)
+            routm <- bind_rows(routm,tmp)
+        }
+        routm <- left_join(ids,routm)
+        return(routm)
+}
