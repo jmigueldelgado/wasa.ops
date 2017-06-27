@@ -22,12 +22,15 @@ updown2strahler <- function(df)
 {
 
     routm <- updown2idup(df)
+    
     cnt <- count(routm,id)
 
    
     routm <- left_join(cnt,routm)
     routm$n[is.na(routm$upstream)] <- 0
     routm$strahler_upstream <- NA
+
+    ids <- data_frame(id=sort(unique(routm$id)))
     
     strh <- data_frame(id=ids$id,strahler=NA)
     strh$strahler[strh$id %in% routm$id[routm$n==0]] <- 1
