@@ -21,30 +21,16 @@ updown2idup <- function(df)
 updown2strahler <- function(df)
 {
 
-    routm <- updown2idup(df)
-    cnt <- count(routm,id)   
-    routm <- left_join(cnt,routm)
-    routm$n[is.na(routm$upstream)] <- 0
+    routm <- df %>%
+        rename(id=upstream) %>%
+        mutate(strahler=NA)
 
-    str <- 1
-    
-    routm <- routm %>%
-        mutate(strahler=NA,strahler_upstream=NA) %>%
-        filter(n==0) %>%
-        mutate(strahler=str) %>%
-        left_join(routm,.)
-    
     while(sum(is.na(routm$strahler))>0)
     {
-        rout0 <- filter(routm,strahler==str)
-        routm$strahler_upstream[routm$upstream %in% rout0$id] <- str
-
-        str <- str+1
-        rout_na <- filter(routm,is.na(strahler))
-        rout1 <- group_by(rout_na,id) %>%
-            summarise(strahler=max(strahler_upstream)+1)
-        routm$strahler[routm$id %in% rout1$id] <- rout1$strahler
+        rout0 <-  filter(routm,is.na(strahler)) %>% slice(1) %>%
+            mutate(strahler=ifelse(sum(.$id %in% routm$downstream)==0,1,max(routm$strahler[routm$downstream %in% .$id])+1))
+        routm[routm$id==rout0$id,] <- rout0
     }
-   strh <- group_by(routm,id) %>% summarise(strahler=max(strahler))
-        return(strh)
+
+    return(routm)
 }
