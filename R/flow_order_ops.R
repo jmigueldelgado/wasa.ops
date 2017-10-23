@@ -4,7 +4,7 @@
 updown2idup <- function(df)
     {
         rout <- as_data_frame(df)
-        ids <- data_frame(id=sort(unique(rout$upstream)))
+        ids <- data_frame(id=sort(unique(c(rout$upstream,rout$downstream))))
         routm <- data_frame(id=integer(),upstream=integer())
         for(i in ids$id)
         {
@@ -22,27 +22,29 @@ updown2strahler <- function(df)
 {
 
     routm <- updown2idup(df)
-    
-    cnt <- count(routm,id)
-
-   
+    cnt <- count(routm,id)   
     routm <- left_join(cnt,routm)
     routm$n[is.na(routm$upstream)] <- 0
-    routm$strahler_upstream <- NA
 
-    ids <- data_frame(id=sort(unique(routm$id)))
+    str <- 1
     
-    strh <- data_frame(id=ids$id,strahler=NA)
-    strh$strahler[strh$id %in% routm$id[routm$n==0]] <- 1
-    str0 <- filter(strh,strahler==1)
-    strh <- str0
+    routm <- routm %>%
+        mutate(strahler=NA,strahler_upstream=NA) %>%
+        filter(n==0) %>%
+        mutate(strahler=str) %>%
+        left_join(routm,.)
     
-    while(sum(is.na(filter(routm,!is.na(upstream))))>0)
+    while(sum(is.na(routm$strahler))>0)
     {
-            routm$strahler_upstream[routm$upstream %in% strh$id] <- strh$strahler
-            str1 <- group_by(routm,id) %>% summarise(strahler=sum(strahler_upstream)+1) %>% filter(!is.na(strahler))
-            strh <- bind_rows(str1,str0)
+        rout0 <- filter(routm,strahler==str)
+        routm$strahler_upstream[routm$upstream %in% rout0$id] <- str
+
+        str <- str+1
+        rout_na <- filter(routm,is.na(strahler))
+        rout1 <- group_by(rout_na,id) %>%
+            summarise(strahler=max(strahler_upstream)+1)
+        routm$strahler[routm$id %in% rout1$id] <- rout1$strahler
     }
-    
+   strh <- group_by(routm,id) %>% summarise(strahler=max(strahler))
         return(strh)
 }
