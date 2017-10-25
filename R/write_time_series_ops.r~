@@ -1,0 +1,28 @@
+#' writes WASA input file H
+#' @param long is a long data frame object whose points are the centroids of the subbasins
+#' @param address is the path where the file should be written
+#' @export
+long2WASA_H <- function(long,address)
+{
+    try(system(paste0("mkdir ",address)))
+    try(system(paste0("rm ",address,"/humidity.dat")))
+    fileConn <- file(paste0(address,"/humidity.dat"),"a")
+    cat("Daily average humidity [%]","Date\tNo. of days\tSubbasin-ID.", file = fileConn, sep = "\n")
+
+    dfObj1 <- select(long,date) %>%
+        distinct(date) %>%
+        mutate(str=strftime(date,"%d%m%Y"),index=row_number()) %>%
+        select(-date)
+    
+    dfObj2 <- select(long,-x,-y) %>%
+        mutate(value=round(value)) %>%
+        spread(location,value) %>%
+        select(-date)
+    dfObj <- bind_cols(dfObj1,dfObj2)
+    
+    HEADER <- c("0","0",colnames(dfObj2))
+    cat(HEADER, file = fileConn, sep = "\t")
+    cat("\n",file = fileConn, sep = "")
+    write.table(dfObj,file = fileConn, quote = FALSE, sep = "\t", row.names = FALSE, col.names=FALSE, fileEncoding = "UTF-8")
+    close(fileConn)            
+}
