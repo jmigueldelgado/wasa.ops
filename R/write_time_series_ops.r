@@ -14,7 +14,7 @@ long2WASA_H <- function(long,address)
         mutate(str=strftime(date,"%d%m%Y"),index=row_number()) %>%
         select(-date)
     
-    dfObj2 <- select(long,-x,-y) %>%
+    dfObj2 <- select(long,location,date,value) %>%
         mutate(value=round(value)) %>%
         spread(location,value) %>%
         select(-date)
@@ -43,7 +43,7 @@ long2WASA_R <- function(long,address)
         mutate(str=strftime(date,"%d%m%Y"),index=row_number()) %>%
         select(-date)
     
-    dfObj2 <- select(long,-x,-y) %>%
+    dfObj2 <- select(long,location,date,value) %>%
         mutate(value=round(value)) %>%
         spread(location,value) %>%
         select(-date)
@@ -74,7 +74,7 @@ long2WASA_T <- function(long,address)
         mutate(str=strftime(date,"%d%m%Y"),index=row_number()) %>%
         select(-date)
     
-    dfObj2 <- select(long,-x,-y) %>%
+    dfObj2 <- select(long,location,date,value) %>%
         mutate(value=round(value)) %>%
         spread(location,value) %>%
         select(-date)
@@ -104,7 +104,7 @@ long2WASA_P <- function(long,address)
         mutate(str=strftime(date,"%d%m%Y"),index=row_number()) %>%
         select(-date)
     
-    dfObj2 <- select(long,-x,-y) %>%
+    dfObj2 <- select(long,location,date,value) %>%
         mutate(value=round(value)) %>%
         spread(location,value) %>%
         select(-date)
